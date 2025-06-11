@@ -2,6 +2,7 @@ from datetime import timedelta
 from typing import Union
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from jose import JWTError, jwt
 
@@ -12,6 +13,15 @@ from database.models import SessionLocal
 import schemas, security
 
 app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.include_router(cost_estimation_router, prefix="/cost-estimation", tags=["Cost Estimation"])
 app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
 
