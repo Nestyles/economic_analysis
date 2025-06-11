@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { getAuthToken } from "@/lib/auth"
 
 interface EstimationResults {
   cocomo: number | null;
@@ -37,6 +38,14 @@ interface DetailedResults {
     max_estimate?: number;
     estimate_range?: number;
   };
+}
+
+interface Project {
+  id: number;
+  name: string;
+  description?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface ProjectInputs {
@@ -74,8 +83,95 @@ export default function CostEstimationModule() {
 
   const [detailedResults, setDetailedResults] = useState<DetailedResults>({});
   const [showDetails, setShowDetails] = useState(false);
-
   const [loading, setLoading] = useState(false);
+
+  // Project selection state
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
+  const [loadingProjects, setLoadingProjects] = useState(true);
+  const [savingToProject, setSavingToProject] = useState(false);
+
+  // Fetch user projects on component mount
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const fetchProjects = async () => {
+    try {
+      const token = getAuthToken();
+      if (!token) {
+        setLoadingProjects(false);
+        return;
+      }
+
+      const response = await fetch('http://localhost:8000/projects/', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setProjects(data);
+      } else {
+        console.error('Failed to fetch projects');
+      }
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    } finally {
+      setLoadingProjects(false);
+    }
+  };
+
+  const saveToProject = async () => {
+    if (!selectedProjectId) {
+      alert('Please select a project to save the estimation to');
+      return;
+    }
+
+    if (Object.values(results).every(result => result === null)) {
+      alert('Please calculate estimations before saving to project');
+      return;
+    }
+
+    setSavingToProject(true);
+    try {
+      const token = getAuthToken();
+      const estimationInput = {
+        size_kloc: inputs.sizeKloc ? parseFloat(inputs.sizeKloc) : null,
+        mode: inputs.mode || null,
+        ufp: inputs.ufp ? parseInt(inputs.ufp) : null,
+        caf: inputs.caf ? parseFloat(inputs.caf) : null,
+        expert_estimates: inputs.expertEstimates.trim() 
+          ? inputs.expertEstimates.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n) && n > 0)
+          : null,
+        regression_size: inputs.regressionSize ? parseFloat(inputs.regressionSize) : null
+      };
+
+      const response = await fetch(`http://localhost:8000/projects/${selectedProjectId}/estimate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(estimationInput)
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert(`Estimation saved to project successfully!`);
+        console.log('Save response:', data);
+      } else {
+        const errorData = await response.json();
+        alert(`Failed to save estimation: ${errorData.detail || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error saving to project:', error);
+      alert('Error saving estimation to project');
+    } finally {
+      setSavingToProject(false);
+    }
+  };
 
   // COCOMO Basic Model Implementation
   const calculateCOCOMO = (sizeKloc: number, mode: string): number => {
@@ -402,6 +498,52 @@ export default function CostEstimationModule() {
                   onChange={(e) => handleInputChange('regressionSize', e.target.value)}
                 />
               </div>
+            </CardContent>          </Card>
+
+          {/* Project Selection */}
+          <Card>
+            <CardHeader>
+              <CardTitle>💾 Save to Project</CardTitle>
+              <CardDescription>
+                Save your cost estimation to a project for comparison and tracking
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="projectSelect">Select Project</Label>
+                {loadingProjects ? (
+                  <div className="p-2 text-sm text-gray-500">Loading projects...</div>
+                ) : projects.length === 0 ? (
+                  <div className="p-2 text-sm text-gray-500">
+                    No projects found. Create a project first in the Projects tab.
+                  </div>
+                ) : (
+                  <select
+                    id="projectSelect"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    value={selectedProjectId || ''}
+                    onChange={(e) => setSelectedProjectId(e.target.value ? parseInt(e.target.value) : null)}
+                  >
+                    <option value="">Select a project...</option>
+                    {projects.map((project) => (
+                      <option key={project.id} value={project.id}>
+                        {project.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+              
+              {selectedProjectId && (
+                <Button 
+                  onClick={saveToProject}
+                  className="w-full"
+                  variant="outline"
+                  disabled={savingToProject || Object.values(results).every(result => result === null)}
+                >
+                  {savingToProject ? 'Saving...' : 'Save Estimation to Project'}
+                </Button>
+              )}
             </CardContent>
           </Card>
 
