@@ -1,6 +1,13 @@
-from typing import List
-from fastapi import APIRouter
+from typing import List, Dict
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from datetime import datetime
 from pydantic import BaseModel
+
+from database import models
+from db import get_db
+import schemas
+from security import oauth2_scheme, get_current_user
 
 router = APIRouter()
 
@@ -95,3 +102,58 @@ def estimate_all(input: ProjectAttributes):
         "Regression Analysis": regression_analysis(input.regression_size)
     }
     return results
+
+@router.post("/projects/", response_model=schemas.Project)
+async def create_project(
+    project: schemas.ProjectCreate,
+    db: Session = Depends(get_db),
+    current_user: schemas.User = Depends(get_current_user)
+):
+    """
+    Create a new project with cost estimations
+    """
+    # Calculate all estimates
+    estimates = {
+        "COCOMO": cocomo_basic(
+            project.attributes["size_kloc"],
+            project.attributes["mode"]
+        ),
+        "Function Points": function_points(
+            project.attributes["ufp"],
+            project.attributes["caf"]
+        ),
+        "Expert Judgment": expert_judgment(
+            project.attributes["expert_estimates"]
+        ),
+        "Delphi Method": delphi_method(
+            project.attributes["expert_estimates"]
+        ),
+        "Regression Analysis": regression_analysis(
+            project.attributes["regression_size"]
+        )
+    }
+    
+    # Create new project in database
+    db_project = models.Project(
+        name=project.name,
+        description=project.description,
+        attributes=project.attributes,
+        estimates=estimates,
+        user_id=current_user.id
+    )
+    
+    db.add(db_project)
+    db.commit()
+    db.refresh(db_project)
+    
+    return db_project
+
+@router.get("/projects/", response_model=List[schemas.Project])
+async def get_user_projects(
+    db: Session = Depends(get_db),
+    current_user: schemas.User = Depends(get_current_user)
+):
+    """
+    Get all projects for the current user
+    """
+    return db.query(models.Project).filter(models.Project.user_id == current_user.id).all()
