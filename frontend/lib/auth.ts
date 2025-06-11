@@ -3,6 +3,12 @@ interface LoginResponse {
   token_type: string;
 }
 
+interface RegisterData {
+  username: string;
+  email: string;
+  password: string;
+}
+
 const AUTH_TOKEN_KEY = 'token';
 
 export const login = async (username: string, password: string): Promise<LoginResponse> => {
@@ -29,6 +35,21 @@ export const login = async (username: string, password: string): Promise<LoginRe
     if (error instanceof Error) {
       throw new Error(error.message);
     }    throw new Error("An unexpected error occurred");
+  }
+};
+
+export const register = async (data: RegisterData): Promise<void> => {
+  const response = await fetch("http://localhost:8000/auth/register", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || "Registration failed");
   }
 };
 
