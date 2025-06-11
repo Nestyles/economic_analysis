@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Optional
+from db import get_db
 from fastapi import Depends, HTTPException, status
 from jose import JWTError, jwt
 from passlib.context import CryptContext
