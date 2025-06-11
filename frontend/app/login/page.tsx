@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { login, setAuthToken } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
+import DebugAuth from "@/components/DebugAuth"
 import {
   Form,
   FormControl,

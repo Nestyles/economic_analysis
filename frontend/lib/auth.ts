@@ -9,7 +9,7 @@ interface RegisterData {
   password: string;
 }
 
-const AUTH_TOKEN_KEY = 'token';
+const AUTH_TOKEN_KEY = 'access_token';
 
 export const login = async (username: string, password: string): Promise<LoginResponse> => {
   try {
@@ -55,15 +55,15 @@ export const register = async (data: RegisterData): Promise<void> => {
 
 export const getAuthToken = (): string | null => {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("token");
+  return localStorage.getItem(AUTH_TOKEN_KEY);
 };
 
 export const setAuthToken = (token: string): void => {
-  localStorage.setItem("token", token);
+  localStorage.setItem(AUTH_TOKEN_KEY, token);
 };
 
 export const removeAuthToken = (): void => {
-  localStorage.removeItem("token");
+  localStorage.removeItem(AUTH_TOKEN_KEY);
 };
 
 export const isAuthenticated = (): boolean => {

@@ -3,15 +3,16 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import CostEstimationModule from "@/components/CostEstimationModule"
+import { getAuthToken, removeAuthToken } from "@/lib/auth"
 
 export default function Dashboard() {
   const router = useRouter()
   const [user, setUser] = useState<string | null>(null)
   const [activeSection, setActiveSection] = useState("overview")
-
   useEffect(() => {
-    // Check if user is authenticated using the auth utility
-    const token = localStorage.getItem('token')
+    // Check if user is authenticated
+    const token = getAuthToken()
     if (!token) {
       router.push('/login')
       return
@@ -21,7 +22,7 @@ export default function Dashboard() {
   }, [router])
 
   const handleLogout = () => {
-    localStorage.removeItem('token')
+    removeAuthToken()
     router.push('/login')
   }
 
@@ -100,17 +101,11 @@ export default function Dashboard() {
                     <p className="text-3xl font-bold text-red-600">3</p>
                   </div>
                 </div>
-              </div>            </div>          </div>
-        )
-      case "cost-estimation":
-        return (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">💰</div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Cost Estimation</h2>
-            <p className="text-gray-600">Estimate project costs and analyze budget requirements</p>
-            <p className="text-gray-600 mt-4">No projects yet. Click "Create Project" in the header to get started.</p>
+              </div>            </div>
           </div>
         )
+      case "cost-estimation":
+        return <CostEstimationModule />;
       case "budget-management":
         return (
           <div className="text-center py-12">
@@ -153,14 +148,9 @@ export default function Dashboard() {
                 </div>
                 <h1 className="text-xl font-semibold text-gray-900">Economic Analysis</h1>
               </div>
-            </div>            <div className="flex items-center space-x-4">
+            </div>
+            <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-700">Welcome, {user}</span>
-              <Button 
-                onClick={() => console.log("Create project clicked")}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                Create Project
-              </Button>
               <Button variant="outline" onClick={handleLogout}>
                 Logout
               </Button>
