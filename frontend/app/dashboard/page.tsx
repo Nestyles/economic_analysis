@@ -48,49 +48,97 @@ export default function Dashboard() {
     setUser('User') // Replace with actual user data from token
     fetchDashboardStats()
   }, [router])
-
   const fetchDashboardStats = async () => {
     try {
       const token = getAuthToken()
-      if (!token) return
+      if (!token) {
+        setLoadingStats(false)
+        return
+      }
 
       const response = await fetch('http://localhost:8000/projects/', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       })
-      
-      if (response.ok) {
+        if (response.ok) {
         const projects = await response.json()
+        console.log('Fetched projects:', projects)
         
-        // Calculate statistics
+        // Ensure projects is an array
+        if (!Array.isArray(projects)) {
+          console.error('Projects response is not an array:', projects)
+          setLoadingStats(false)
+          return
+        }
+        
+        // Calculate statistics safely
         const totalProjects = projects.length
         let totalEstimatedCost = 0
         let estimationsDone = 0
         
         projects.forEach((project: any) => {
-          if (project.estimated_cost) {
-            totalEstimatedCost += project.estimated_cost
-            estimationsDone += project.estimation_methods_count || 0
+          // Safe access to project properties
+          if (project && typeof project === 'object') {
+            // Count any project with estimates as having estimated cost
+            if (project.estimates && typeof project.estimates === 'object') {
+              const estimates = project.estimates
+              const estimateValues = Object.values(estimates).filter((val: any) => 
+                val && typeof val === 'object' && typeof val.effort_person_months === 'number'
+              )
+              
+              if (estimateValues.length > 0) {
+                // Calculate average of available estimates
+                const avgEstimate = estimateValues.reduce((sum: number, est: any) => 
+                  sum + (est.effort_person_months || 0), 0
+                ) / estimateValues.length
+                
+                totalEstimatedCost += avgEstimate
+                estimationsDone += estimateValues.length
+              }
+            }
+            
+            // Fallback to estimated_cost if available
+            if (project.estimated_cost && typeof project.estimated_cost === 'number') {
+              if (!project.estimates || Object.keys(project.estimates).length === 0) {
+                totalEstimatedCost += project.estimated_cost
+                estimationsDone += project.estimation_methods_count || 1
+              }
+            }
           }
         })
         
         const averageProjectCost = totalProjects > 0 ? totalEstimatedCost / totalProjects : 0
         
-        // Get recent projects (last 5)
+        // Get recent projects (last 5) with safe date parsing
         const recentProjects = projects
-          .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          .filter((project: any) => project && project.created_at)
+          .sort((a: any, b: any) => {
+            const dateA = new Date(a.created_at)
+            const dateB = new Date(b.created_at)
+            return dateB.getTime() - dateA.getTime()
+          })
           .slice(0, 5)
-        
-        setDashboardStats({
+          .map((project: any) => ({
+            id: project.id || 0,
+            name: project.name || 'Untitled Project',
+            description: project.description || '',
+            created_at: project.created_at,
+            estimated_cost: project.estimated_cost || null,
+            estimation_methods_count: project.estimation_methods_count || 0
+          }))
+          const finalStats = {
           totalProjects,
           totalEstimatedCost,
           estimationsDone,
           averageProjectCost,
           recentProjects
-        })
+        }
+        
+        console.log('Dashboard stats calculated:', finalStats)
+        setDashboardStats(finalStats)
       } else {
-        console.error('Failed to fetch dashboard stats')
+        console.error('Failed to fetch dashboard stats:', response.status, response.statusText)
       }
     } catch (error) {
       console.error('Error fetching dashboard stats:', error)
@@ -159,10 +207,21 @@ export default function Dashboard() {
 
     switch (activeSection) {      case "overview":
         return (
-          <div className="space-y-8">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900">Dashboard Overview</h2>
-              <p className="text-gray-600 mt-2">Welcome to your Economic Analysis Dashboard</p>
+          <div className="space-y-8">            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-3xl font-bold text-gray-900">Dashboard Overview</h2>
+                <p className="text-gray-600 mt-2">Welcome to your Economic Analysis Dashboard</p>
+              </div>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setLoadingStats(true)
+                  fetchDashboardStats()
+                }}
+                disabled={loadingStats}
+              >
+                {loadingStats ? 'Refreshing...' : 'Refresh'}
+              </Button>
             </div>
             
             {/* Statistics Cards */}
