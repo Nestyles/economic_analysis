@@ -100,9 +100,7 @@ export default function Dashboard() {
                     <p className="text-3xl font-bold text-red-600">3</p>
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
+              </div>            </div>          </div>
         )
       case "cost-estimation":
         return (
@@ -110,6 +108,7 @@ export default function Dashboard() {
             <div className="text-6xl mb-4">💰</div>
             <h2 className="text-3xl font-bold text-gray-900 mb-2">Cost Estimation</h2>
             <p className="text-gray-600">Estimate project costs and analyze budget requirements</p>
+            <p className="text-gray-600 mt-4">No projects yet. Click "Create Project" in the header to get started.</p>
           </div>
         )
       case "budget-management":
@@ -154,9 +153,14 @@ export default function Dashboard() {
                 </div>
                 <h1 className="text-xl font-semibold text-gray-900">Economic Analysis</h1>
               </div>
-            </div>
-            <div className="flex items-center space-x-4">
+            </div>            <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-700">Welcome, {user}</span>
+              <Button 
+                onClick={() => console.log("Create project clicked")}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Create Project
+              </Button>
               <Button variant="outline" onClick={handleLogout}>
                 Logout
               </Button>
