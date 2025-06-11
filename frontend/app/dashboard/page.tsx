@@ -4,12 +4,15 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import CostEstimationModule from "@/components/CostEstimationModule"
+import ProjectManagement from "@/components/ProjectManagement"
+import ProjectEstimation from "@/components/ProjectEstimation"
 import { getAuthToken, removeAuthToken } from "@/lib/auth"
 
 export default function Dashboard() {
   const router = useRouter()
   const [user, setUser] = useState<string | null>(null)
   const [activeSection, setActiveSection] = useState("overview")
+  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null)
   useEffect(() => {
     // Check if user is authenticated
     const token = getAuthToken()
@@ -25,12 +28,16 @@ export default function Dashboard() {
     removeAuthToken()
     router.push('/login')
   }
-
   const navigationItems = [
     {
       id: "overview",
       title: "Overview",
       icon: "📊"
+    },
+    {
+      id: "projects",
+      title: "Projects",
+      icon: "📁"
     },
     {
       id: "cost-estimation",
@@ -64,8 +71,17 @@ export default function Dashboard() {
       </div>
     )
   }
-
   const renderContent = () => {
+    // Handle project estimation view
+    if (selectedProjectId) {
+      return (
+        <ProjectEstimation 
+          projectId={selectedProjectId} 
+          onBack={() => setSelectedProjectId(null)}
+        />
+      )
+    }
+
     switch (activeSection) {
       case "overview":
         return (
@@ -77,7 +93,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div className="bg-white p-6 rounded-lg shadow border">
                 <div className="flex items-center">
-                  <div className="text-2xl mr-3">💰</div>
+                  <div className="text-2xl mr-3">📁</div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">Total Projects</h3>
                     <p className="text-3xl font-bold text-blue-600">12</p>
@@ -86,24 +102,26 @@ export default function Dashboard() {
               </div>
               <div className="bg-white p-6 rounded-lg shadow border">
                 <div className="flex items-center">
-                  <div className="text-2xl mr-3">📈</div>
+                  <div className="text-2xl mr-3">💰</div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">Total Budget</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">Total Estimated Cost</h3>
                     <p className="text-3xl font-bold text-green-600">$485,200</p>
                   </div>
                 </div>
               </div>
               <div className="bg-white p-6 rounded-lg shadow border">
                 <div className="flex items-center">
-                  <div className="text-2xl mr-3">⚠️</div>
+                  <div className="text-2xl mr-3">📊</div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">Active Risks</h3>
-                    <p className="text-3xl font-bold text-red-600">3</p>
+                    <h3 className="text-lg font-semibold text-gray-900">Estimations Done</h3>
+                    <p className="text-3xl font-bold text-purple-600">28</p>
                   </div>
                 </div>
               </div>            </div>
           </div>
         )
+      case "projects":
+        return <ProjectManagement />
       case "cost-estimation":
         return <CostEstimationModule />;
       case "budget-management":
