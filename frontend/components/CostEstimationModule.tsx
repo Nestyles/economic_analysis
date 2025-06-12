@@ -377,24 +377,24 @@ export default function CostEstimationModule() {
     const sum = validResults.reduce((acc, [_, value]) => acc + (value || 0), 0);
     return sum / validResults.length;
   };
-
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">💰 Cost Estimation Module</h2>
-        <p className="text-gray-600">
+      <div className="text-center">
+        <h2 className="text-4xl font-bold bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-4">💰 Cost Estimation Module</h2>
+        <p className="text-gray-600 text-lg max-w-2xl mx-auto">
           Compare multiple estimation techniques: COCOMO, Function Points, Expert Judgment, Delphi Method, and Regression Analysis
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Input Panel */}
-        <div className="space-y-6">
-          {/* COCOMO Inputs */}
-          <Card>
-            <CardHeader>
-              <CardTitle>🔢 COCOMO Model</CardTitle>
-              <CardDescription>
+        <div className="space-y-6">          {/* COCOMO Inputs */}
+          <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardHeader className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-t-lg">
+              <CardTitle className="flex items-center gap-2">
+                <span className="text-xl">🔢</span> COCOMO Model
+              </CardTitle>
+              <CardDescription className="text-blue-100">
                 Basic COCOMO estimation based on project size and complexity mode
               </CardDescription>
             </CardHeader>
@@ -423,13 +423,13 @@ export default function CostEstimationModule() {
                 </select>
               </div>
             </CardContent>
-          </Card>
-
-          {/* Function Points Inputs */}
-          <Card>
-            <CardHeader>
-              <CardTitle>📊 Function Points</CardTitle>
-              <CardDescription>
+          </Card>          {/* Function Points Inputs */}
+          <Card className="border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-emerald-100 shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardHeader className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-t-lg">
+              <CardTitle className="flex items-center gap-2">
+                <span className="text-xl">📊</span> Function Points
+              </CardTitle>
+              <CardDescription className="text-emerald-100">
                 Estimation based on functional requirements and complexity
               </CardDescription>
             </CardHeader>
@@ -456,13 +456,13 @@ export default function CostEstimationModule() {
                 />
               </div>
             </CardContent>
-          </Card>
-
-          {/* Expert Judgment/Delphi Inputs */}
-          <Card>
-            <CardHeader>
-              <CardTitle>👥 Expert Judgment & Delphi</CardTitle>
-              <CardDescription>
+          </Card>          {/* Expert Judgment/Delphi Inputs */}
+          <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100 shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardHeader className="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-t-lg">
+              <CardTitle className="flex items-center gap-2">
+                <span className="text-xl">👥</span> Expert Judgment & Delphi
+              </CardTitle>
+              <CardDescription className="text-purple-100">
                 Multiple expert estimates for comparison and consensus
               </CardDescription>
             </CardHeader>
@@ -477,13 +477,13 @@ export default function CostEstimationModule() {
                 />
               </div>
             </CardContent>
-          </Card>
-
-          {/* Regression Inputs */}
-          <Card>
-            <CardHeader>
-              <CardTitle>📈 Regression Analysis</CardTitle>
-              <CardDescription>
+          </Card>          {/* Regression Inputs */}
+          <Card className="border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100 shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardHeader className="bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-t-lg">
+              <CardTitle className="flex items-center gap-2">
+                <span className="text-xl">📈</span> Regression Analysis
+              </CardTitle>
+              <CardDescription className="text-orange-100">
                 Mathematical model based on historical project data
               </CardDescription>
             </CardHeader>
@@ -498,13 +498,13 @@ export default function CostEstimationModule() {
                   onChange={(e) => handleInputChange('regressionSize', e.target.value)}
                 />
               </div>
-            </CardContent>          </Card>
-
-          {/* Project Selection */}
-          <Card>
-            <CardHeader>
-              <CardTitle>💾 Save to Project</CardTitle>
-              <CardDescription>
+            </CardContent>          </Card>          {/* Project Selection */}
+          <Card className="border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-indigo-100 shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardHeader className="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-t-lg">
+              <CardTitle className="flex items-center gap-2">
+                <span className="text-xl">💾</span> Save to Project
+              </CardTitle>
+              <CardDescription className="text-indigo-100">
                 Save your cost estimation to a project for comparison and tracking
               </CardDescription>
             </CardHeader>
@@ -545,52 +545,59 @@ export default function CostEstimationModule() {
                 </Button>
               )}
             </CardContent>
-          </Card>
-
-          <Button 
+          </Card>          <Button 
             onClick={handleCalculate} 
-            className="w-full" 
+            className="w-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 text-white font-semibold py-4 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300" 
             size="lg"
             disabled={loading}
           >
-            {loading ? 'Calculating...' : 'Calculate Estimates'}
+            {loading ? (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                Calculating...
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🚀</span>
+                Calculate Estimates
+              </div>
+            )}
           </Button>
-        </div>
-
-        {/* Results Panel */}
+        </div>        {/* Results Panel */}
         <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>📋 Estimation Results</CardTitle>
-              <CardDescription>
+          <Card className="border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100 shadow-xl">
+            <CardHeader className="bg-gradient-to-r from-slate-600 to-slate-700 text-white rounded-t-lg">
+              <CardTitle className="flex items-center gap-2">
+                <span className="text-xl">📋</span> Estimation Results
+              </CardTitle>
+              <CardDescription className="text-slate-200">
                 Comparison of different estimation techniques
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 p-6">
               <div className="space-y-3">
-                <div className="flex justify-between p-3 bg-blue-50 rounded">
-                  <span className="font-medium">COCOMO Basic:</span>
-                  <span className="text-blue-600 font-semibold">{formatResult(results.cocomo)}</span>
+                <div className="flex justify-between p-4 bg-gradient-to-r from-blue-100 to-blue-200 rounded-lg border border-blue-300 shadow-sm">
+                  <span className="font-medium text-blue-900">COCOMO Basic:</span>
+                  <span className="text-blue-700 font-bold text-lg">{formatResult(results.cocomo)}</span>
                 </div>
                 
-                <div className="flex justify-between p-3 bg-green-50 rounded">
-                  <span className="font-medium">Function Points:</span>
-                  <span className="text-green-600 font-semibold">{formatResult(results.functionPoints)}</span>
+                <div className="flex justify-between p-4 bg-gradient-to-r from-emerald-100 to-emerald-200 rounded-lg border border-emerald-300 shadow-sm">
+                  <span className="font-medium text-emerald-900">Function Points:</span>
+                  <span className="text-emerald-700 font-bold text-lg">{formatResult(results.functionPoints)}</span>
+                </div>
+                  <div className="flex justify-between p-4 bg-gradient-to-r from-purple-100 to-purple-200 rounded-lg border border-purple-300 shadow-sm">
+                  <span className="font-medium text-purple-900">Expert Judgment:</span>
+                  <span className="text-purple-700 font-bold text-lg">{formatResult(results.expertJudgment)}</span>
                 </div>
                 
-                <div className="flex justify-between p-3 bg-purple-50 rounded">
-                  <span className="font-medium">Expert Judgment:</span>
-                  <span className="text-purple-600 font-semibold">{formatResult(results.expertJudgment)}</span>
+                <div className="flex justify-between p-4 bg-gradient-to-r from-orange-100 to-orange-200 rounded-lg border border-orange-300 shadow-sm">
+                  <span className="font-medium text-orange-900">Delphi Method:</span>
+                  <span className="text-orange-700 font-bold text-lg">{formatResult(results.delphi)}</span>
                 </div>
                 
-                <div className="flex justify-between p-3 bg-orange-50 rounded">
-                  <span className="font-medium">Delphi Method:</span>
-                  <span className="text-orange-600 font-semibold">{formatResult(results.delphi)}</span>
-                </div>
-                
-                <div className="flex justify-between p-3 bg-red-50 rounded">
-                  <span className="font-medium">Regression Analysis:</span>
-                  <span className="text-red-600 font-semibold">{formatResult(results.regression)}</span>
+                <div className="flex justify-between p-4 bg-gradient-to-r from-rose-100 to-rose-200 rounded-lg border border-rose-300 shadow-sm">
+                  <span className="font-medium text-rose-900">Regression Analysis:</span>
+                  <span className="text-rose-700 font-bold text-lg">{formatResult(results.regression)}</span>
                 </div>
               </div>              {getValidResults().length > 0 && (
                 <div className="mt-6 p-4 bg-gray-100 rounded-lg">

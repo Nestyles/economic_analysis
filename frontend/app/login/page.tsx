@@ -58,11 +58,10 @@ export default function LoginPage() {
       setIsLoading(false)
     }
   }
-
   return (
-    <div className="container relative flex h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
-      <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
-        <div className="absolute inset-0 bg-zinc-900" />
+    <div className="container relative flex h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0 bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
+      <div className="relative hidden h-full flex-col p-10 text-white dark:border-r lg:flex">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-800" />
         <div className="relative z-20 flex items-center text-lg font-medium">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -81,17 +80,17 @@ export default function LoginPage() {
         <div className="relative z-20 mt-auto">
           <blockquote className="space-y-2">
             <p className="text-lg">
-              Make better decisions with our cost estimation tools.
+              "Make better decisions with our advanced cost estimation and risk analysis tools."
             </p>
+            <footer className="text-sm text-blue-200">Trusted by teams worldwide</footer>
           </blockquote>
         </div>
       </div>
       <div className="lg:p-8">
         <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-          <Card className="w-full">
-            <CardHeader>
-              <CardTitle>Login</CardTitle>
-              <CardDescription>
+          <Card className="w-full border-2 border-blue-200 bg-white/80 backdrop-blur-sm shadow-2xl">            <CardHeader className="text-center">
+              <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Welcome Back</CardTitle>
+              <CardDescription className="text-gray-600">
                 Enter your credentials to access your account
               </CardDescription>
             </CardHeader>
@@ -135,13 +134,19 @@ export default function LoginPage() {
                   />
                   {error && (
                     <div className="text-sm text-red-500 mt-2">{error}</div>
-                  )}
-                  <Button
+                  )}                  <Button
                     type="submit"
-                    className="w-full"
+                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
                     disabled={isLoading}
                   >
-                    {isLoading ? "Signing in..." : "Sign In"}
+                    {isLoading ? (
+                      <div className="flex items-center gap-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        Signing in...
+                      </div>
+                    ) : (
+                      "Sign In"
+                    )}
                   </Button>
                 </form>
               </Form>

@@ -293,30 +293,36 @@ export default function RiskManagementModule({ projectId }: { projectId: number 
       maximumFractionDigits: 0
     }).format(amount);
   };
-
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Risk Management & Analysis</h2>
+    <div className="p-6 bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 rounded-xl shadow-xl border border-orange-200">
+      <div className="text-center mb-8">
+        <h2 className="text-4xl font-bold bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 bg-clip-text text-transparent mb-4">
+          ⚠️ Risk Management & Analysis
+        </h2>
+        <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+          Comprehensive risk analysis with sensitivity analysis, decision trees, and Monte Carlo simulations
+        </p>
+      </div>
 
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200 mb-6">
-        <nav className="-mb-px flex space-x-8">
+      <div className="border-b-2 border-orange-200 mb-6 bg-white/60 backdrop-blur-sm rounded-lg p-2">
+        <nav className="flex space-x-2">
           {[
-            { id: 'sensitivity', label: 'Sensitivity Analysis', icon: '📊' },
-            { id: 'decision-tree', label: 'Decision Trees', icon: '🌳' },
-            { id: 'monte-carlo', label: 'Monte Carlo', icon: '🎲' },
-            { id: 'results', label: 'Results & Reports', icon: '📈' }
+            { id: 'sensitivity', label: 'Sensitivity Analysis', icon: '📊', color: 'blue' },
+            { id: 'decision-tree', label: 'Decision Trees', icon: '🌳', color: 'green' },
+            { id: 'monte-carlo', label: 'Monte Carlo', icon: '🎲', color: 'purple' },
+            { id: 'results', label: 'Results & Reports', icon: '📈', color: 'orange' }
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
+              className={`py-3 px-4 rounded-lg font-medium text-sm whitespace-nowrap transition-all duration-300 transform hover:scale-105 ${
                 activeTab === tab.id
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? `bg-gradient-to-r from-${tab.color}-500 to-${tab.color}-600 text-white shadow-lg`
+                  : 'text-gray-600 hover:text-gray-800 hover:bg-white/80'
               }`}
             >
-              <span className="mr-2">{tab.icon}</span>
+              <span className="mr-2 text-lg">{tab.icon}</span>
               {tab.label}
             </button>
           ))}

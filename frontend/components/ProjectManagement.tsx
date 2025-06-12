@@ -198,10 +198,9 @@ export default function ProjectManagement({ onProjectSelect, selectMode = 'norma
       </div>
     )
   }
-
   return (
     <div className="space-y-6">      <div className="flex justify-between items-center">
-        <div>          <h2 className="text-3xl font-bold text-gray-900">
+        <div>          <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 bg-clip-text text-transparent">
             {selectMode === 'budget' 
               ? 'Select Project for Budget Management' 
               : selectMode === 'financial' 
@@ -213,7 +212,7 @@ export default function ProjectManagement({ onProjectSelect, selectMode = 'norma
               : 'Project Management'
             }
           </h2>
-          <p className="text-gray-600 mt-2">
+          <p className="text-gray-600 mt-2 text-lg">
             {selectMode === 'budget' 
               ? 'Choose a project to manage its budget and track financial performance'
               : selectMode === 'financial'
@@ -231,22 +230,25 @@ export default function ProjectManagement({ onProjectSelect, selectMode = 'norma
               <Button 
                 onClick={compareProjects} 
                 disabled={comparing}
-                variant="outline"
+                className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
               >
                 {comparing ? 'Comparing...' : `Compare ${selectedProjects.length} Projects`}
               </Button>
               <Button 
                 onClick={compareBudgets} 
                 disabled={comparing}
-                variant="outline"
+                className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
               >
                 📊 Compare Budgets
               </Button>
             </>
           )}
           {selectMode === 'normal' && (
-            <Button onClick={() => setShowCreateForm(true)}>
-              New Project
+            <Button 
+              onClick={() => setShowCreateForm(true)}
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+            >
+              ✨ New Project
             </Button>
           )}
         </div>

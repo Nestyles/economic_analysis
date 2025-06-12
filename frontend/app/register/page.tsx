@@ -69,11 +69,10 @@ export default function RegisterPage() {
       setIsLoading(false)
     }
   }
-
   return (
-    <div className="container relative flex h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
-      <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
-        <div className="absolute inset-0 bg-zinc-900" />
+    <div className="container relative flex h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0 bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
+      <div className="relative hidden h-full flex-col p-10 text-white dark:border-r lg:flex">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-800" />
         <div className="relative z-20 flex items-center text-lg font-medium">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -92,18 +91,19 @@ export default function RegisterPage() {
         <div className="relative z-20 mt-auto">
           <blockquote className="space-y-2">
             <p className="text-lg">
-              Join us to access powerful cost estimation tools and make better decisions.
+              "Join thousands of teams who trust our platform for accurate cost estimation and risk analysis."
             </p>
+            <footer className="text-sm text-emerald-200">Start your journey today</footer>
           </blockquote>
         </div>
       </div>
       <div className="lg:p-8">
         <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-          <Card className="w-full">
-            <CardHeader>
-              <CardTitle>Create an Account</CardTitle>
-              <CardDescription>
-                Enter your details to create your account
+          <Card className="w-full border-2 border-emerald-200 bg-white/80 backdrop-blur-sm shadow-2xl">
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Create Account</CardTitle>
+              <CardDescription className="text-gray-600">
+                Enter your details to get started
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -182,13 +182,19 @@ export default function RegisterPage() {
                   />
                   {error && (
                     <div className="text-sm text-red-500 mt-2">{error}</div>
-                  )}
-                  <Button
+                  )}                  <Button
                     type="submit"
-                    className="w-full"
+                    className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold py-3 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
                     disabled={isLoading}
                   >
-                    {isLoading ? "Creating account..." : "Create account"}
+                    {isLoading ? (
+                      <div className="flex items-center gap-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        Creating account...
+                      </div>
+                    ) : (
+                      "Create Account"
+                    )}
                   </Button>
                 </form>
               </Form>
