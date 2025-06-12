@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any, List
 from datetime import datetime
 
@@ -59,7 +59,14 @@ class Project(BaseModel):
     user_id: int
     attributes: Optional[Dict[str, Any]] = None
     estimates: Optional[Dict[str, Any]] = None
-    
+    initial_budget: Optional[float] = None
+    actual_cost: Optional[float] = None
+    expected_revenue: Optional[float] = None
+    discount_rate: Optional[float] = None
+    cash_flows: Optional[Dict[str, Any]] = None
+    budget_tracking: Optional[Dict[str, Any]] = None
+    financial_metrics: Optional[Dict[str, Any]] = None
+
     class Config:
         from_attributes = True
 
@@ -71,3 +78,15 @@ class ProjectSummary(BaseModel):
     updated_at: datetime
     estimated_cost: Optional[float] = None
     estimation_methods_count: int = 0
+
+class FinancialMetrics(BaseModel):
+    roi: Optional[float] = None
+    npv: Optional[float] = None
+    irr: Optional[float] = None
+    payback_period: Optional[float] = None
+    details: Optional[Dict] = None
+
+class BudgetInfo(BaseModel):
+    initial_budget: float = Field(..., gt=0)
+    expected_revenue: Optional[float] = None
+    discount_rate: Optional[float] = None

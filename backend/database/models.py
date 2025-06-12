@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, create_engine, Float, DateTime, ForeignKey, JSON
+from sqlalchemy import Column, Integer, String, create_engine, Float, DateTime, ForeignKey, JSON, Numeric
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from datetime import datetime
@@ -32,6 +32,15 @@ class Project(Base):
     # Store estimation attributes as JSON
     attributes = Column(JSON)
     estimates = Column(JSON)
+    
+    # Budget and financial metrics
+    initial_budget = Column(Numeric(10, 2), nullable=True)
+    actual_cost = Column(Numeric(10, 2), nullable=True)
+    expected_revenue = Column(Numeric(10, 2), nullable=True)
+    discount_rate = Column(Numeric(5, 2), nullable=True)  # For NPV calculations
+    cash_flows = Column(JSON)  # Store periodic cash flows for financial calculations
+    budget_tracking = Column(JSON)  # Store budget tracking data
+    financial_metrics = Column(JSON)  # Store calculated financial metrics
     
     # Relationship to user
     user = relationship("User", back_populates="projects")
