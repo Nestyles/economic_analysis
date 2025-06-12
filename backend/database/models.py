@@ -28,7 +28,6 @@ class Project(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user_id = Column(Integer, ForeignKey("users.id"))
-    
     # Store estimation attributes as JSON
     attributes = Column(JSON)
     estimates = Column(JSON)
@@ -41,6 +40,14 @@ class Project(Base):
     cash_flows = Column(JSON)  # Store periodic cash flows for financial calculations
     budget_tracking = Column(JSON)  # Store budget tracking data
     financial_metrics = Column(JSON)  # Store calculated financial metrics
+    
+    # Risk management data
+    risk_analysis = Column(JSON)  # Store risk analysis results
+    
+    # Resource allocation data
+    resource_allocation = Column(JSON)  # Store resource allocation and optimization results
+    resources = Column(JSON)  # Store project resources
+    tasks = Column(JSON)  # Store project tasks
     
     # Relationship to user
     user = relationship("User", back_populates="projects")

@@ -90,3 +90,48 @@ class BudgetInfo(BaseModel):
     initial_budget: float = Field(..., gt=0)
     expected_revenue: Optional[float] = None
     discount_rate: Optional[float] = None
+
+class Resource(BaseModel):
+    id: str
+    name: str
+    cost_per_hour: float
+    max_hours_per_day: float = 8.0
+    skills: List[str]
+
+class Task(BaseModel):
+    id: str
+    name: str
+    duration_hours: float
+    required_skills: List[str]
+    dependencies: Optional[List[str]] = None
+    earliest_start: Optional[datetime] = None
+    deadline: Optional[datetime] = None
+
+class RiskVariable(BaseModel):
+    min_value: float
+    max_value: float
+    most_likely: Optional[float] = None
+    distribution: str = "uniform"
+
+class Project(ProjectCreate):
+    id: int
+    start_date: datetime
+    created_at: datetime
+    updated_at: datetime
+    user_id: int
+    attributes: Optional[Dict[str, Any]] = None
+    estimates: Optional[Dict[str, Any]] = None
+    initial_budget: Optional[float] = None
+    actual_cost: Optional[float] = None
+    expected_revenue: Optional[float] = None
+    discount_rate: Optional[float] = None
+    cash_flows: Optional[Dict[str, Any]] = None
+    budget_tracking: Optional[Dict[str, Any]] = None
+    financial_metrics: Optional[Dict[str, Any]] = None
+    risk_analysis: Optional[Dict[str, Any]] = None
+    resource_allocation: Optional[Dict[str, Any]] = None
+    resources: Optional[List[Resource]] = None
+    tasks: Optional[List[Task]] = None
+
+    class Config:
+        from_attributes = True

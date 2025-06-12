@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import CostEstimationModule from "@/components/CostEstimationModule"
 import ProjectManagement from "@/components/ProjectManagement"
 import ProjectEstimation from "@/components/ProjectEstimation"
+import BudgetTrackingModule from "@/components/BudgetTrackingModule"
+import FinancialMetricsModule from "@/components/FinancialMetricsModule"
 import { getAuthToken, removeAuthToken } from "@/lib/auth"
 
 interface DashboardStats {
@@ -48,6 +50,7 @@ export default function Dashboard() {
     setUser('User') // Replace with actual user data from token
     fetchDashboardStats()
   }, [router])
+
   const fetchDashboardStats = async () => {
     try {
       const token = getAuthToken()
@@ -61,26 +64,22 @@ export default function Dashboard() {
           'Authorization': `Bearer ${token}`
         }
       })
-        if (response.ok) {
+
+      if (response.ok) {
         const projects = await response.json()
-        console.log('Fetched projects:', projects)
         
-        // Ensure projects is an array
         if (!Array.isArray(projects)) {
           console.error('Projects response is not an array:', projects)
           setLoadingStats(false)
           return
         }
         
-        // Calculate statistics safely
         const totalProjects = projects.length
         let totalEstimatedCost = 0
         let estimationsDone = 0
         
         projects.forEach((project: any) => {
-          // Safe access to project properties
           if (project && typeof project === 'object') {
-            // Count any project with estimates as having estimated cost
             if (project.estimates && typeof project.estimates === 'object') {
               const estimates = project.estimates
               const estimateValues = Object.values(estimates).filter((val: any) => 
@@ -88,7 +87,6 @@ export default function Dashboard() {
               )
               
               if (estimateValues.length > 0) {
-                // Calculate average of available estimates
                 const avgEstimate = estimateValues.reduce((sum: number, est: any) => 
                   sum + (est.effort_person_months || 0), 0
                 ) / estimateValues.length
@@ -98,7 +96,6 @@ export default function Dashboard() {
               }
             }
             
-            // Fallback to estimated_cost if available
             if (project.estimated_cost && typeof project.estimated_cost === 'number') {
               if (!project.estimates || Object.keys(project.estimates).length === 0) {
                 totalEstimatedCost += project.estimated_cost
@@ -110,7 +107,6 @@ export default function Dashboard() {
         
         const averageProjectCost = totalProjects > 0 ? totalEstimatedCost / totalProjects : 0
         
-        // Get recent projects (last 5) with safe date parsing
         const recentProjects = projects
           .filter((project: any) => project && project.created_at)
           .sort((a: any, b: any) => {
@@ -127,7 +123,8 @@ export default function Dashboard() {
             estimated_cost: project.estimated_cost || null,
             estimation_methods_count: project.estimation_methods_count || 0
           }))
-          const finalStats = {
+
+        const finalStats = {
           totalProjects,
           totalEstimatedCost,
           estimationsDone,
@@ -135,7 +132,6 @@ export default function Dashboard() {
           recentProjects
         }
         
-        console.log('Dashboard stats calculated:', finalStats)
         setDashboardStats(finalStats)
       } else {
         console.error('Failed to fetch dashboard stats:', response.status, response.statusText)
@@ -151,6 +147,7 @@ export default function Dashboard() {
     removeAuthToken()
     router.push('/login')
   }
+
   const navigationItems = [
     {
       id: "overview",
@@ -173,9 +170,9 @@ export default function Dashboard() {
       icon: "📈"
     },
     {
-      id: "risk-management",
-      title: "Risk Management",
-      icon: "⚠️"
+      id: "financial-metrics",
+      title: "Financial Metrics",
+      icon: "💹"
     },
     {
       id: "reports",
@@ -194,9 +191,10 @@ export default function Dashboard() {
       </div>
     )
   }
+
   const renderContent = () => {
     // Handle project estimation view
-    if (selectedProjectId) {
+    if (selectedProjectId && activeSection === "projects") {
       return (
         <ProjectEstimation 
           projectId={selectedProjectId} 
@@ -205,9 +203,11 @@ export default function Dashboard() {
       )
     }
 
-    switch (activeSection) {      case "overview":
+    switch (activeSection) {
+      case "overview":
         return (
-          <div className="space-y-8">            <div className="flex justify-between items-center">
+          <div className="space-y-8">
+            <div className="flex justify-between items-center">
               <div>
                 <h2 className="text-3xl font-bold text-gray-900">Dashboard Overview</h2>
                 <p className="text-gray-600 mt-2">Welcome to your Economic Analysis Dashboard</p>
@@ -224,7 +224,6 @@ export default function Dashboard() {
               </Button>
             </div>
             
-            {/* Statistics Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="bg-white p-6 rounded-lg shadow border">
                 <div className="flex items-center">
@@ -277,7 +276,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Recent Projects */}
             <div className="bg-white rounded-lg shadow border">
               <div className="px-6 py-4 border-b">
                 <h3 className="text-lg font-semibold text-gray-900">Recent Projects</h3>
@@ -353,7 +351,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Quick Actions */}
             <div className="bg-white rounded-lg shadow border">
               <div className="px-6 py-4 border-b">
                 <h3 className="text-lg font-semibold text-gray-900">Quick Actions</h3>
@@ -390,7 +387,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Summary Insights */}
             {!loadingStats && dashboardStats.totalProjects > 0 && (
               <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">📈 Project Insights</h3>
@@ -412,26 +408,25 @@ export default function Dashboard() {
             )}
           </div>
         )
+
       case "projects":
-        return <ProjectManagement />
+        return <ProjectManagement onProjectSelect={(id: number) => setSelectedProjectId(id)} />;
+
       case "cost-estimation":
         return <CostEstimationModule />;
+
       case "budget-management":
-        return (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">📈</div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Budget Management</h2>
-            <p className="text-gray-600">Manage and track project budgets</p>
-          </div>
-        )
-      case "risk-management":
-        return (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">⚠️</div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Risk Management</h2>
-            <p className="text-gray-600">Identify and mitigate project risks</p>
-          </div>
-        )
+        if (selectedProjectId) {
+          return <BudgetTrackingModule projectId={selectedProjectId} />;
+        }
+        return <ProjectManagement onProjectSelect={(id: number) => setSelectedProjectId(id)} />;
+
+      case "financial-metrics":
+        if (selectedProjectId) {
+          return <FinancialMetricsModule projectId={selectedProjectId} />;
+        }
+        return <ProjectManagement onProjectSelect={(id: number) => setSelectedProjectId(id)} />;
+
       case "reports":
         return (
           <div className="text-center py-12">
@@ -440,6 +435,7 @@ export default function Dashboard() {
             <p className="text-gray-600">Generate and view analysis reports</p>
           </div>
         )
+
       default:
         return null
     }
@@ -447,7 +443,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -469,7 +464,6 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* Navigation Bar */}
       <nav className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex space-x-8 overflow-x-auto">
@@ -491,7 +485,6 @@ export default function Dashboard() {
         </div>
       </nav>
 
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {renderContent()}
       </main>

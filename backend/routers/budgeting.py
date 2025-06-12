@@ -66,7 +66,7 @@ def calculate_payback_period(initial_investment: float, cash_flows: List[float])
             return i + fraction
     return None
 
-@router.post("/projects/{project_id}/financials")
+@router.post("/{project_id}/financials")
 async def calculate_financial_metrics(
     project_id: int,
     input_data: FinancialInput,
@@ -109,7 +109,7 @@ async def calculate_financial_metrics(
     
     return metrics
 
-@router.post("/projects/{project_id}/budget/track")
+@router.post("/{project_id}/track")
 async def track_budget(
     project_id: int,
     update: BudgetUpdate,
@@ -143,11 +143,10 @@ async def track_budget(
         period_data["categories"][update.category] = 0
     
     period_data["categories"][update.category] += update.actual_cost
-    period_data["actual"] += update.actual_cost
-    
-    # Update total actual cost
-    project.actual_cost = project.actual_cost or 0
-    project.actual_cost += update.actual_cost
+    period_data["actual"] += update.actual_cost    # Update total actual cost
+    from decimal import Decimal
+    current_actual = Decimal(str(project.actual_cost or 0))
+    project.actual_cost = current_actual + Decimal(str(update.actual_cost))
     
     # Calculate variance
     if project.initial_budget:
@@ -167,7 +166,7 @@ async def track_budget(
         "variance": project.budget_tracking.get("variance")
     }
 
-@router.get("/projects/{project_id}/budget/analysis")
+@router.get("/{project_id}/analysis")
 async def get_budget_analysis(
     project_id: int,
     db: Session = Depends(get_db),
