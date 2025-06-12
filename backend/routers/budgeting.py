@@ -40,30 +40,51 @@ def calculate_roi(initial_investment: float, total_returns: float) -> float:
     """Calculate Return on Investment (ROI)"""
     return ((total_returns - initial_investment) / initial_investment) * 100
 
-def calculate_npv(cash_flows: ArrayLike, discount_rate: float) -> float:
+def calculate_npv(cash_flows: List[float], discount_rate: float) -> float:
     """Calculate Net Present Value (NPV)"""
     rate = discount_rate / 100  # Convert percentage to decimal
-    npv = np.npv(rate, cash_flows)
+    npv = sum(cf / (1 + rate) ** i for i, cf in enumerate(cash_flows))
     return round(npv, 2)
 
-def calculate_irr(cash_flows: ArrayLike) -> Optional[float]:
-    """Calculate Internal Rate of Return (IRR)"""
-    try:
-        irr = np.irr(cash_flows)
-        return round(float(irr) * 100, 2)  # Convert to percentage
-    except:
+def calculate_irr(cash_flows: List[float], max_iterations: int = 100, tolerance: float = 1e-6) -> Optional[float]:
+    """Calculate Internal Rate of Return (IRR) using Newton-Raphson method"""
+    if not cash_flows or len(cash_flows) < 2:
         return None
+    
+    # Initial guess
+    rate = 0.1
+    
+    for _ in range(max_iterations):
+        # Calculate NPV and its derivative
+        npv = sum(cf / (1 + rate) ** i for i, cf in enumerate(cash_flows))
+        dnpv = sum(-i * cf / (1 + rate) ** (i + 1) for i, cf in enumerate(cash_flows))
+        
+        if abs(dnpv) < tolerance:
+            break
+            
+        # Newton-Raphson iteration
+        new_rate = rate - npv / dnpv
+        
+        if abs(new_rate - rate) < tolerance:
+            return round(new_rate * 100, 2)  # Convert to percentage
+            
+        rate = new_rate
+    
+    return None
 
 def calculate_payback_period(initial_investment: float, cash_flows: List[float]) -> Optional[float]:
     """Calculate Payback Period"""
+    if not cash_flows or initial_investment <= 0:
+        return None
+        
     cumulative = 0
-    for i, cf in enumerate(cash_flows):
+    for i, cf in enumerate(cash_flows[1:], 1):  # Skip initial investment
         cumulative += cf
         if cumulative >= initial_investment:
             # Linear interpolation for more accurate payback period
             prev_cumulative = cumulative - cf
             fraction = (initial_investment - prev_cumulative) / cf
-            return i + fraction
+            return round(i - 1 + fraction, 2)
     return None
 
 @router.post("/{project_id}/financials")

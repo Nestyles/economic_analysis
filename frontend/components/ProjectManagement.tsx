@@ -12,6 +12,8 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { getAuthToken } from "@/lib/auth"
+import BudgetAnalysisSummary from "./BudgetAnalysisSummary"
+import BudgetComparison from "./BudgetComparison"
 
 interface Project {
   id: number;
@@ -28,7 +30,12 @@ interface NewProject {
   description: string;
 }
 
-export default function ProjectManagement() {
+interface ProjectManagementProps {
+  onProjectSelect?: (projectId: number, action?: 'budget' | 'financial' | 'estimate' | 'risk' | 'resource') => void;
+  selectMode?: 'budget' | 'financial' | 'risk' | 'resource' | 'normal';
+}
+
+export default function ProjectManagement({ onProjectSelect, selectMode = 'normal' }: ProjectManagementProps = {}) {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreateForm, setShowCreateForm] = useState(false)
@@ -37,6 +44,8 @@ export default function ProjectManagement() {
   const [selectedProjects, setSelectedProjects] = useState<number[]>([])
   const [comparing, setComparing] = useState(false)
   const [comparisonData, setComparisonData] = useState<any>(null)
+  const [expandedBudgetAnalysis, setExpandedBudgetAnalysis] = useState<number | null>(null)
+  const [showBudgetComparison, setShowBudgetComparison] = useState(false)
 
   useEffect(() => {
     fetchProjects()
@@ -122,7 +131,6 @@ export default function ProjectManagement() {
         : [...prev, projectId]
     )
   }
-
   const compareProjects = async () => {
     if (selectedProjects.length < 2) {
       alert('Please select at least 2 projects to compare')
@@ -152,6 +160,22 @@ export default function ProjectManagement() {
     }
   }
 
+  const compareBudgets = () => {
+    if (selectedProjects.length < 2) {
+      alert('Please select at least 2 projects to compare budget analysis')
+      return
+    }
+    setShowBudgetComparison(true)
+  }
+
+  const getProjectNamesMap = () => {
+    const map: { [key: number]: string } = {}
+    projects.forEach(project => {
+      map[project.id] = project.name
+    })
+    return map
+  }
+
   const formatCurrency = (amount?: number) => {
     if (amount === null || amount === undefined) return 'N/A'
     return new Intl.NumberFormat('en-US', {
@@ -176,30 +200,58 @@ export default function ProjectManagement() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-3xl font-bold text-gray-900">Project Management</h2>
-          <p className="text-gray-600 mt-2">Create, manage, and compare your economic analysis projects</p>
-        </div>
-        <div className="space-x-2">
-          {selectedProjects.length >= 2 && (
-            <Button 
-              onClick={compareProjects} 
-              disabled={comparing}
-              variant="outline"
-            >
-              {comparing ? 'Comparing...' : `Compare ${selectedProjects.length} Projects`}
+    <div className="space-y-6">      <div className="flex justify-between items-center">
+        <div>          <h2 className="text-3xl font-bold text-gray-900">
+            {selectMode === 'budget' 
+              ? 'Select Project for Budget Management' 
+              : selectMode === 'financial' 
+              ? 'Select Project for Financial Metrics'
+              : selectMode === 'risk'
+              ? 'Select Project for Risk Analysis'
+              : selectMode === 'resource'
+              ? 'Select Project for Resource Optimization'
+              : 'Project Management'
+            }
+          </h2>
+          <p className="text-gray-600 mt-2">
+            {selectMode === 'budget' 
+              ? 'Choose a project to manage its budget and track financial performance'
+              : selectMode === 'financial'
+              ? 'Choose a project to analyze its financial metrics (ROI, NPV, IRR, Payback)'
+              : selectMode === 'risk'
+              ? 'Choose a project to perform risk analysis with sensitivity analysis, decision trees, and Monte Carlo simulations'
+              : selectMode === 'resource'
+              ? 'Choose a project to optimize resource allocation with leveling, smoothing, and scenario analysis'
+              : 'Create, manage, and compare your economic analysis projects'
+            }
+          </p>
+        </div>        <div className="space-x-2">
+          {selectMode === 'normal' && selectedProjects.length >= 2 && (
+            <>
+              <Button 
+                onClick={compareProjects} 
+                disabled={comparing}
+                variant="outline"
+              >
+                {comparing ? 'Comparing...' : `Compare ${selectedProjects.length} Projects`}
+              </Button>
+              <Button 
+                onClick={compareBudgets} 
+                disabled={comparing}
+                variant="outline"
+              >
+                📊 Compare Budgets
+              </Button>
+            </>
+          )}
+          {selectMode === 'normal' && (
+            <Button onClick={() => setShowCreateForm(true)}>
+              New Project
             </Button>
           )}
-          <Button onClick={() => setShowCreateForm(true)}>
-            New Project
-          </Button>
         </div>
-      </div>
-
-      {/* Create Project Form */}
-      {showCreateForm && (
+      </div>      {/* Create Project Form */}
+      {selectMode === 'normal' && showCreateForm && (
         <Card>
           <CardHeader>
             <CardTitle>Create New Project</CardTitle>
@@ -238,6 +290,15 @@ export default function ProjectManagement() {
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Budget Comparison */}
+      {showBudgetComparison && (
+        <BudgetComparison
+          projectIds={selectedProjects}
+          projectNames={getProjectNamesMap()}
+          onClose={() => setShowBudgetComparison(false)}
+        />
       )}
 
       {/* Comparison Results */}
@@ -363,24 +424,72 @@ export default function ProjectManagement() {
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-600">Created:</span>
                     <span className="text-sm">{formatDate(project.created_at)}</span>
-                  </div>
-                </div>
-                
-                <div className="flex justify-between mt-4 pt-4 border-t">
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={() => {/* Navigate to estimate page */}}
-                  >
-                    Add Estimates
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="destructive"
-                    onClick={() => deleteProject(project.id)}
-                  >
-                    Delete
-                  </Button>
+                  </div>                </div>
+
+                {/* Budget Analysis Summary for normal mode */}
+                {selectMode === 'normal' && (
+                  <BudgetAnalysisSummary
+                    projectId={project.id}
+                    projectName={project.name}
+                    isExpanded={expandedBudgetAnalysis === project.id}
+                    onToggleExpand={() => 
+                      setExpandedBudgetAnalysis(
+                        expandedBudgetAnalysis === project.id ? null : project.id
+                      )
+                    }
+                  />
+                )}
+
+                <div className="flex justify-between mt-4 pt-4 border-t">                  {selectMode === 'budget' ? (
+                    <Button 
+                      size="sm" 
+                      className="flex-1 mr-2"
+                      onClick={() => onProjectSelect?.(project.id, 'budget')}
+                    >
+                      Select for Budget Management
+                    </Button>
+                  ) : selectMode === 'financial' ? (
+                    <Button 
+                      size="sm" 
+                      className="flex-1 mr-2"
+                      onClick={() => onProjectSelect?.(project.id, 'financial')}
+                    >
+                      Select for Financial Metrics
+                    </Button>
+                  ) : selectMode === 'risk' ? (
+                    <Button 
+                      size="sm" 
+                      className="flex-1 mr-2"
+                      onClick={() => onProjectSelect?.(project.id, 'risk')}
+                    >
+                      Select for Risk Analysis
+                    </Button>
+                  ) : selectMode === 'resource' ? (
+                    <Button 
+                      size="sm" 
+                      className="flex-1 mr-2"
+                      onClick={() => onProjectSelect?.(project.id, 'resource')}
+                    >
+                      Select for Resource Optimization
+                    </Button>
+                  ) : (
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => {/* Navigate to estimate page */}}
+                    >
+                      Add Estimates
+                    </Button>
+                  )}
+                  {selectMode === 'normal' && (
+                    <Button 
+                      size="sm" 
+                      variant="destructive"
+                      onClick={() => deleteProject(project.id)}
+                    >
+                      Delete
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>

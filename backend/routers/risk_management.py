@@ -70,20 +70,74 @@ def perform_sensitivity_analysis(base_value: float, variables: Dict[str, Dict[st
     }
 
 def evaluate_decision_tree(node: DecisionTreeNode) -> Dict:
-    """Recursively evaluate a decision tree node"""
-    expected_value = node.value * node.probability
+    """Recursively evaluate a decision tree node with comprehensive analysis"""
+    if node.type == 'outcome':
+        # For outcome nodes, return the net value
+        net_value = (node.value or 0) - (node.cost or 0)
+        return {
+            'node': node.name,
+            'type': node.type,
+            'probability': node.probability or 1.0,
+            'cost': node.cost or 0,
+            'value': node.value or 0,
+            'net_value': net_value,
+            'expected_value': net_value * (node.probability or 1.0)
+        }
     
-    if node.children:
-        for child in node.children:
-            child_result = evaluate_decision_tree(child)
-            expected_value += child_result['expected_value']
+    elif node.type == 'chance':
+        # For chance nodes, calculate expected value of all outcomes
+        total_expected_value = 0
+        outcomes = []
+        
+        if node.children:
+            for child in node.children:
+                child_result = evaluate_decision_tree(child)
+                total_expected_value += child_result['expected_value']
+                outcomes.append(child_result)
+        
+        return {
+            'node': node.name,
+            'type': node.type,
+            'expected_value': total_expected_value,
+            'outcomes': outcomes,
+            'best_case': max([o['net_value'] for o in outcomes]) if outcomes else 0,
+            'worst_case': min([o['net_value'] for o in outcomes]) if outcomes else 0,
+            'risk_range': max([o['net_value'] for o in outcomes]) - min([o['net_value'] for o in outcomes]) if outcomes else 0
+        }
     
-    return {
-        'node': node.name,
-        'probability': node.probability,
-        'value': node.value,
-        'expected_value': expected_value
-    }
+    elif node.type == 'decision':
+        # For decision nodes, find the best option
+        best_option = None
+        best_expected_value = float('-inf')
+        options = []
+        
+        if node.children:
+            for child in node.children:
+                child_result = evaluate_decision_tree(child)
+                options.append(child_result)
+                
+                if child_result['expected_value'] > best_expected_value:
+                    best_expected_value = child_result['expected_value']
+                    best_option = child_result
+        
+        return {
+            'node': node.name,
+            'type': node.type,
+            'expected_value': best_expected_value,
+            'best_option': best_option['node'] if best_option else None,
+            'options': options,
+            'analysis': {
+                'optimal_choice': best_option['node'] if best_option else None,
+                'optimal_value': best_expected_value,
+                'alternatives': [
+                    {
+                        'name': opt['node'],
+                        'expected_value': opt['expected_value'],
+                        'risk_range': opt.get('risk_range', 0)
+                    } for opt in options
+                ]
+            }
+        }
 
 def monte_carlo_simulation(
     variables: Dict[str, Dict[str, float]],

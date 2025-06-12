@@ -7,7 +7,9 @@ import CostEstimationModule from "@/components/CostEstimationModule"
 import ProjectManagement from "@/components/ProjectManagement"
 import ProjectEstimation from "@/components/ProjectEstimation"
 import BudgetTrackingModule from "@/components/BudgetTrackingModule"
-import FinancialMetricsModule from "@/components/FinancialMetricsModule"
+import RiskManagementModule from "@/components/RiskManagementModule"
+import ResourceOptimizationModule from "@/components/ResourceOptimizationModule"
+import DashboardBudgetOverview from "@/components/DashboardBudgetOverview"
 import { getAuthToken, removeAuthToken } from "@/lib/auth"
 
 interface DashboardStats {
@@ -34,10 +36,10 @@ export default function Dashboard() {
     totalProjects: 0,
     totalEstimatedCost: 0,
     estimationsDone: 0,
-    averageProjectCost: 0,
-    recentProjects: []
+    averageProjectCost: 0,    recentProjects: []
   })
   const [loadingStats, setLoadingStats] = useState(true)
+  const [projectSelectionMode, setProjectSelectionMode] = useState<'budget' | 'financial' | 'risk' | 'resource' | null>(null)
 
   useEffect(() => {
     // Check if user is authenticated
@@ -147,7 +149,6 @@ export default function Dashboard() {
     removeAuthToken()
     router.push('/login')
   }
-
   const navigationItems = [
     {
       id: "overview",
@@ -168,16 +169,15 @@ export default function Dashboard() {
       id: "budget-management",
       title: "Budget Management",
       icon: "📈"
+    },    {
+      id: "risk-management",
+      title: "Risk Management",
+      icon: "⚠️"
     },
     {
-      id: "financial-metrics",
-      title: "Financial Metrics",
-      icon: "💹"
-    },
-    {
-      id: "reports",
-      title: "Reports",
-      icon: "📋"
+      id: "resource-optimization",
+      title: "Resource Optimization",
+      icon: "🔧"
     }
   ]
 
@@ -189,12 +189,27 @@ export default function Dashboard() {
           <p className="mt-2 text-gray-600">Loading...</p>
         </div>
       </div>
-    )
+    )  }
+  const handleProjectSelect = (projectId: number) => {
+    setSelectedProjectId(projectId)
+    if (projectSelectionMode === 'budget') {
+      setActiveSection('budget-management')
+      setProjectSelectionMode(null)
+    } else if (projectSelectionMode === 'financial') {
+      setActiveSection('risk-management')
+      setProjectSelectionMode(null)
+    } else if (projectSelectionMode === 'risk') {
+      setActiveSection('risk-management')
+      setProjectSelectionMode(null)
+    } else if (projectSelectionMode === 'resource') {
+      setActiveSection('resource-optimization')
+      setProjectSelectionMode(null)
+    }
   }
 
   const renderContent = () => {
     // Handle project estimation view
-    if (selectedProjectId && activeSection === "projects") {
+    if (selectedProjectId && activeSection === "projects" && !projectSelectionMode) {
       return (
         <ProjectEstimation 
           projectId={selectedProjectId} 
@@ -404,37 +419,128 @@ export default function Dashboard() {
                     </p>
                   </div>
                 </div>
+              </div>            )}          </div>
+        );      case "projects":
+        if (projectSelectionMode) {
+          return (
+            <div>
+              <div className="mb-4 flex items-center justify-between">                <h2 className="text-2xl font-bold text-gray-900">
+                  Select Project for {projectSelectionMode === 'budget' ? 'Budget Management' : projectSelectionMode === 'risk' ? 'Risk Analysis' : projectSelectionMode === 'resource' ? 'Resource Optimization' : 'Financial Metrics'}
+                </h2>
+                <Button 
+                  variant="outline"                  onClick={() => {
+                    setProjectSelectionMode(null);
+                    setActiveSection(projectSelectionMode === 'budget' ? 'budget-management' : projectSelectionMode === 'resource' ? 'resource-optimization' : 'risk-management');
+                  }}
+                >
+                  Back
+                </Button>
               </div>
-            )}
-          </div>
-        )
-
-      case "projects":
-        return <ProjectManagement onProjectSelect={(id: number) => setSelectedProjectId(id)} />;
+              <ProjectManagement 
+                onProjectSelect={handleProjectSelect}
+                selectMode={projectSelectionMode}
+              />
+            </div>
+          );
+        }
+        return <ProjectManagement />;
 
       case "cost-estimation":
-        return <CostEstimationModule />;
-
-      case "budget-management":
+        return <CostEstimationModule />;      case "budget-management":
         if (selectedProjectId) {
-          return <BudgetTrackingModule projectId={selectedProjectId} />;
+          return (
+            <div>
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-gray-900">Budget Management</h2>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setSelectedProjectId(null);
+                  }}
+                >
+                  Switch Project
+                </Button>
+              </div>
+              <BudgetTrackingModule projectId={selectedProjectId} />
+            </div>
+          );
         }
-        return <ProjectManagement onProjectSelect={(id: number) => setSelectedProjectId(id)} />;
-
-      case "financial-metrics":
-        if (selectedProjectId) {
-          return <FinancialMetricsModule projectId={selectedProjectId} />;
-        }
-        return <ProjectManagement onProjectSelect={(id: number) => setSelectedProjectId(id)} />;
-
-      case "reports":
         return (
           <div className="text-center py-12">
-            <div className="text-6xl mb-4">📋</div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Reports</h2>
-            <p className="text-gray-600">Generate and view analysis reports</p>
+            <div className="text-6xl mb-4">📈</div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Budget Management</h2>
+            <p className="text-gray-600 mb-6">Track and manage project budgets with financial analysis</p>
+            <Button onClick={() => {
+              setProjectSelectionMode('budget');
+              setActiveSection('projects');
+            }}>
+              Select a Project to Manage Budget
+            </Button>
+          </div>        );      case "risk-management":
+        if (selectedProjectId) {
+          return (
+            <div>
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-gray-900">Risk Management</h2>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setSelectedProjectId(null);
+                  }}
+                >
+                  Switch Project
+                </Button>
+              </div>
+              <RiskManagementModule projectId={selectedProjectId} />
+            </div>
+          );
+        }
+        return (
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">⚠️</div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Risk Management</h2>
+            <p className="text-gray-600 mb-6">Perform risk analysis with sensitivity analysis, decision trees, and Monte Carlo simulations</p>
+            <Button onClick={() => {
+              setProjectSelectionMode('risk');
+              setActiveSection('projects');
+            }}>
+              Select a Project for Risk Analysis
+            </Button>
           </div>
-        )
+        );
+
+      case "resource-optimization":
+        if (selectedProjectId) {
+          return (
+            <div>
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-gray-900">Resource Optimization</h2>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setSelectedProjectId(null);
+                  }}
+                >
+                  Switch Project
+                </Button>
+              </div>
+              <ResourceOptimizationModule projectId={selectedProjectId} />
+            </div>
+          );
+        }
+        return (
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">🔧</div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Resource Optimization</h2>
+            <p className="text-gray-600 mb-6">Optimize resource allocation with leveling, smoothing, and scenario analysis</p>
+            <Button onClick={() => {
+              setProjectSelectionMode('resource');
+              setActiveSection('projects');
+            }}>
+              Select a Project for Resource Optimization
+            </Button>
+          </div>
+        );
 
       default:
         return null
@@ -466,11 +572,16 @@ export default function Dashboard() {
 
       <nav className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8 overflow-x-auto">
-            {navigationItems.map((item) => (
+          <div className="flex space-x-8 overflow-x-auto">            {navigationItems.map((item) => (
               <button
                 key={item.id}
-                onClick={() => setActiveSection(item.id)}
+                onClick={() => {
+                  setActiveSection(item.id);                  // Clear project selection when changing sections unless going to budget/risk/resource with a project
+                  if (item.id !== 'budget-management' && item.id !== 'risk-management' && item.id !== 'resource-optimization') {
+                    setSelectedProjectId(null);
+                    setProjectSelectionMode(null);
+                  }
+                }}
                 className={`flex items-center px-3 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                   activeSection === item.id
                     ? "border-blue-500 text-blue-600"
